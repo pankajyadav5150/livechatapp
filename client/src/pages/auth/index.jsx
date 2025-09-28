@@ -50,24 +50,12 @@ const Auth = () => {
           { email, password },
           { withCredentials: true }
         );
-        
-        if (response.data?.user?.id) {
-          // Store the token if it's in the response
-          if (response.data.token) {
-            localStorage.setItem('access-token', response.data.token);
-          }
-          
-          // Update user info in the store
+        if (response.data.user.id) {
           setUserInfo(response.data.user);
-          
-          // Redirect based on profile setup status
-          if (response.data.user.profileSetup) {
-            navigate("/chat");
-          } else {
-            navigate("/profile");
-          }
+          if (response.data.user.profileSetup) navigate("/chat");
+          else navigate("/profile");
         } else {
-          toast.error("Invalid response from server");
+          console.log("error");
         }
       }
     } catch (error) {
