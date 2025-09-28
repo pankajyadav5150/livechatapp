@@ -15,22 +15,36 @@ const app = express();
 const port = process.env.PORT;
 const databaseURL = process.env.DATABSE_URL;
 
-// Handle preflight requests
-app.options('*', cors({
-  origin: 'http://localhost:5173',
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
 
-// CORS middleware for all other routes
-app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+// Apply CORS to all routes
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
+// Serve static files
 app.use("/uploads/profiles", express.static("uploads/profiles"));
 app.use("/uploads/files", express.static("uploads/files"));
 
