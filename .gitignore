@@ -1,3 +1,8 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log
@@ -7,9 +12,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Build files
 dist
 dist-ssr
+build
+
+# Local development
 *.local
 
 # Editor directories and files
@@ -23,4 +36,25 @@ dist-ssr
 *.sln
 *.sw?
 
+# Uploads
 server/uploads
+
+# Environment specific
+.env.development
+.env.test
+.env.production
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
