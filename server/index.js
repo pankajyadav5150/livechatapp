@@ -12,8 +12,8 @@ import channelRoutes from "./routes/ChannelRoutes.js";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT;
-const databaseURL = process.env.DATABSE_URL;
+const port = process.env.PORT || 8747; // Default port if not specified
+const databaseURL = process.env.DATABASE_URL || 'mongodb://localhost:27017/chat-app';
 
 // CORS configuration
 const allowedOrigins = [
@@ -51,22 +51,120 @@ app.use("/uploads/files", express.static("uploads/files"));
 app.use(cookieParser());
 app.use(express.json());
 
+// Root route to show server status
+app.get('/', (req, res) => {
+  const status = {
+    status: 'Server is running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: '/api/auth',
+      messages: '/api/messages',
+      channels: '/api/channel',
+      contacts: '/api/contacts'
+    },
+    documentation: 'Check the console for more details'
+  };
+  
+  // Send a nice HTML response
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Chat App Server</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+          }
+          .status {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+          }
+          .success {
+            color: #2ecc71;
+            font-weight: bold;
+          }
+          .endpoint {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e8f4fc;
+            border-left: 4px solid #3498db;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>🚀 Chat App Server</h1>
+        <div class="status">
+          <p>Status: <span class="success">✅ Server is running</span></p>
+          <p>Time: ${new Date().toLocaleString()}</p>
+        </div>
+        
+        <h2>📡 Available Endpoints</h2>
+        <div class="endpoint">
+          <strong>Authentication:</strong> /api/auth
+        </div>
+        <div class="endpoint">
+          <strong>Messages:</strong> /api/messages
+        </div>
+        <div class="endpoint">
+          <strong>Channels:</strong> /api/channel
+        </div>
+        <div class="endpoint">
+          <strong>Contacts:</strong> /api/contacts
+        </div>
+        
+        <p style="margin-top: 30px; color: #7f8c8d; font-size: 0.9em;">
+          ℹ️ Check the server console for more detailed information
+        </p>
+      </body>
+    </html>
+  `);
+});
+
+
 app.use("/api/auth", authRoutes);
 app.use("/api/contacts", contactsRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/channel", channelRoutes);
 
-const server = app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+// Start the server only after DB connection is established
+const startServer = async () => {
+  try {
+    console.log('🔄 Connecting to database...');
+    await mongoose.connect(databaseURL);
+    console.log('✅ Database connection successful');
+    
+    const server = app.listen(port, () => {
+      console.log(`\n🚀 Server is running on port ${port}`);
+      console.log(`🌐 Access the server at: http://localhost:${port}`);
+      console.log(`\n📡 API Endpoints:`);
+      console.log(`- Auth:       http://localhost:${port}/api/auth`);
+      console.log(`- Messages:   http://localhost:${port}/api/messages`);
+      console.log(`- Channels:   http://localhost:${port}/api/channel`);
+      console.log(`\n🛑 Press Ctrl+C to stop the server\n`);
+    });
+    
+    // Setup Socket.IO
+    setupSocket(server);
+    
+  } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
+    process.exit(1); // Exit with failure
+  }
+};
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  // Close server & exit process
+  server.close(() => process.exit(1));
 });
 
-setupSocket(server);
-
-mongoose
-  .connect(databaseURL)
-  .then(() => {
-    console.log("DB Connetion Successfull");
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
+// Start the application
+startServer();
