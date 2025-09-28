@@ -12,8 +12,8 @@ import channelRoutes from "./routes/ChannelRoutes.js";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 8747; // Default port if not specified
-const databaseURL = process.env.DATABASE_URL || 'mongodb://localhost:27017/chat-app';
+const port = process.env.PORT || 8747; // Render will provide the PORT
+const databaseURL = process.env.MONGODB_URI || 'mongodb://localhost:27017/chat-app'; // Updated for Render
 
 // CORS configuration
 const allowedOrigins = [
@@ -140,18 +140,27 @@ const startServer = async () => {
     await mongoose.connect(databaseURL);
     console.log('✅ Database connection successful');
     
-    const server = app.listen(port, () => {
+    const server = app.listen(port, '0.0.0.0', () => {
       console.log(`\n🚀 Server is running on port ${port}`);
       console.log(`🌐 Access the server at: http://localhost:${port}`);
       console.log(`\n📡 API Endpoints:`);
-      console.log(`- Auth:       http://localhost:${port}/api/auth`);
-      console.log(`- Messages:   http://localhost:${port}/api/messages`);
-      console.log(`- Channels:   http://localhost:${port}/api/channel`);
+      console.log(`- Auth:       /api/auth`);
+      console.log(`- Messages:   /api/messages`);
+      console.log(`- Channels:   /api/channel`);
       console.log(`\n🛑 Press Ctrl+C to stop the server\n`);
     });
     
     // Setup Socket.IO
     setupSocket(server);
+    
+    // Handle server errors
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(`Port ${port} is already in use`);
+        process.exit(1);
+      }
+      console.error('Server error:', error);
+    });
     
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);

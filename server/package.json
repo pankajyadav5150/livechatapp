@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build": "echo \"No build step required\" && exit 0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "author": "",
   "license": "ISC",
