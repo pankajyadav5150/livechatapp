@@ -2,8 +2,14 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { HOST } from "./constants";
 
+// Ensure the base URL doesn't have trailing slashes
+const getBaseUrl = () => {
+  const base = HOST.endsWith('/') ? HOST.slice(0, -1) : HOST;
+  return base;
+};
+
 const apiClient = axios.create({
-  baseURL: HOST,
+  baseURL: getBaseUrl(),
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

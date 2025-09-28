@@ -13,15 +13,11 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 8747; // Render will provide the PORT
-const databaseURL = process.env.MONGODB_URI || 'mongodb://localhost:27017/chat-app'; // Updated for Render
+const databaseURL = process.env.MONGODB_URI ; // Updated for Render
 
 // CORS configuration
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:3000',
-  'https://your-render-app-url.onrender.com'  // Add your production URL here
+  process.env.ORIGIN || 'http://localhost:5173'  // Use ORIGIN from .env or fallback to localhost:5173
 ];
 
 const corsOptions = {
